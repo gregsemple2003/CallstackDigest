@@ -1,0 +1,8 @@
+# ignore these folders anywhere in the repo
+
+**/.vs/
+
+**/bin/
+
+**/obj/
+
