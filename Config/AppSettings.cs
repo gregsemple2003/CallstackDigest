@@ -11,6 +11,7 @@ namespace CallstackDigest
         {
             public int FramesToAnnotateFromTop { get; set; } = 10;
             public int MaxSourceLinesPerFunction { get; set; } = 120;
+            public string SelectedMode { get; set; } = "Explain"; // NEW: persisted mode
         }
 
         private static readonly string AppDir =
@@ -19,11 +20,17 @@ namespace CallstackDigest
         private static readonly object Gate = new();
         private static Data _data;
 
+        // NEW: persisted mode choice
+        private static PromptBuilder.Mode _modeChoice = PromptBuilder.Mode.Explain;
+
         static AppSettings()
         {
             _data = Load();
             _framesToAnnotateFromTop = Math.Max(0, _data.FramesToAnnotateFromTop);
             _maxSourceLinesPerFunction = Math.Max(1, _data.MaxSourceLinesPerFunction);
+
+            if (!Enum.TryParse(_data.SelectedMode, out _modeChoice))
+                _modeChoice = PromptBuilder.Mode.Explain;
         }
 
         private static Data Load()
@@ -50,6 +57,7 @@ namespace CallstackDigest
                     Directory.CreateDirectory(AppDir);
                     _data.FramesToAnnotateFromTop = _framesToAnnotateFromTop;
                     _data.MaxSourceLinesPerFunction = _maxSourceLinesPerFunction;
+                    _data.SelectedMode = _modeChoice.ToString(); // NEW
                     var json = JsonSerializer.Serialize(_data, new JsonSerializerOptions { WriteIndented = true });
                     File.WriteAllText(FilePath, json);
                 }
@@ -95,6 +103,19 @@ namespace CallstackDigest
             set
             {
                 _maxSourceLinesPerFunction = Math.Max(1, value);
+                Save();
+            }
+        }
+
+        /// <summary>
+        /// The current Mode selection, persisted.
+        /// </summary>
+        public static PromptBuilder.Mode ModeChoice
+        {
+            get => _modeChoice;
+            set
+            {
+                _modeChoice = value;
                 Save();
             }
         }

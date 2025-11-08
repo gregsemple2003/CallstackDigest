@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -16,9 +17,9 @@ namespace CallstackDigest
         {
             InitializeComponent();
 
-            // Mode setup
+            // Mode setup (persisted)
             ModeCombo.ItemsSource = Enum.GetValues(typeof(PromptBuilder.Mode));
-            ModeCombo.SelectedItem = PromptBuilder.Mode.Explain;
+            ModeCombo.SelectedItem = AppSettings.ModeChoice;
 
             // Settings -> controls
             FramesTextBox.Text = Math.Max(0, AppSettings.FramesToAnnotateFromTop).ToString();
@@ -27,6 +28,7 @@ namespace CallstackDigest
             // Template editor initial load and initial prompt build
             UpdateTemplateEditorFromMode();
             BuildPrompt();
+            UpdatePromptSizeIndicator(); // NEW
         }
 
         // ---------- Top bar actions ----------
@@ -86,6 +88,9 @@ namespace CallstackDigest
 
         private void ModeCombo_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
+            // Persist selection (NEW)
+            AppSettings.ModeChoice = (PromptBuilder.Mode)ModeCombo.SelectedItem!;
+
             UpdateTemplateEditorFromMode();
             BuildPrompt();
         }
@@ -195,6 +200,32 @@ namespace CallstackDigest
             var mode = (PromptBuilder.Mode)ModeCombo.SelectedItem!;
             string template = TemplateTextBox.Text;
             PromptTextBox.Text = PromptBuilder.Build(mode, template, _rawCallstack ?? string.Empty, withSrc);
+
+            UpdatePromptSizeIndicator(); // NEW
+        }
+
+        // ---------- NEW: KB indicator ----------
+
+        private void PromptTextBox_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            UpdatePromptSizeIndicator();
+        }
+
+        private void UpdatePromptSizeIndicator()
+        {
+            if (PromptSizeTextBlock == null) return;
+
+            string text = PromptTextBox.Text ?? string.Empty;
+            string normalized = text.Replace("\r\n", "\n").Replace("\n", "\r\n");
+
+            int bytesUtf16 = Encoding.Unicode.GetByteCount(normalized + "\0");
+            double kbUtf16 = bytesUtf16 / 1024.0;
+
+            int bytesUtf8 = Encoding.UTF8.GetByteCount(normalized);
+            double kbUtf8 = bytesUtf8 / 1024.0;
+
+            PromptSizeTextBlock.Text = $"Size if copied ≈ {kbUtf16:F1} KB";
+            PromptSizeTextBlock.ToolTip = $"{bytesUtf16:N0} bytes (UTF‑16 / clipboard).  UTF‑8 ≈ {kbUtf8:F1} KB ({bytesUtf8:N0} bytes).";
         }
     }
 }

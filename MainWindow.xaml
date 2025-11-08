@@ -23,11 +23,19 @@
 
       <TextBlock Text="Frames to Annotate:" VerticalAlignment="Center" Margin="16,0,0,0"/>
       <TextBox x:Name="txtFramesTop" Width="60" Height="28" Margin="6,0,0,0"
-               VerticalContentAlignment="Center" LostFocus="NumericBox_LostFocus" PreviewTextInput="DigitsOnly"/>
+               VerticalContentAlignment="Center"
+               LostFocus="NumericBox_LostFocus"
+               PreviewTextInput="DigitsOnly"
+               DataObject.Pasting="NumericPaste"
+               TextChanged="NumericBox_TextChanged"/>
 
       <TextBlock Text="Max Function Lines:" VerticalAlignment="Center" Margin="16,0,0,0"/>
       <TextBox x:Name="txtMaxLines" Width="60" Height="28" Margin="6,0,0,0"
-               VerticalContentAlignment="Center" LostFocus="NumericBox_LostFocus" PreviewTextInput="DigitsOnly"/>
+               VerticalContentAlignment="Center"
+               LostFocus="NumericBox_LostFocus"
+               PreviewTextInput="DigitsOnly"
+               DataObject.Pasting="NumericPaste"
+               TextChanged="NumericBox_TextChanged"/>
     </StackPanel>
 
     <!-- Row 1: Prompt template -->
@@ -52,14 +60,23 @@
     <!-- Row 2: Tabs -->
     <TabControl x:Name="tabs" Grid.Row="2">
       <TabItem Header="Prompt">
-        <TextBox x:Name="txtPrompt"
-                 FontFamily="Consolas" FontSize="12"
-                 AcceptsReturn="True" AcceptsTab="True"
-                 IsReadOnly="True"
-                 TextWrapping="NoWrap"
-                 HorizontalScrollBarVisibility="Auto"
-                 VerticalScrollBarVisibility="Auto"
-                 Background="{DynamicResource {x:Static SystemColors.ControlLightLightBrushKey}}"/>
+        <!-- NEW: status line with KB indicator above the prompt text -->
+        <DockPanel LastChildFill="True">
+          <TextBlock x:Name="lblPromptSize"
+                     DockPanel.Dock="Top"
+                     Margin="0,6,0,4"
+                     Foreground="Gray"
+                     Text="" />
+          <TextBox x:Name="txtPrompt"
+                   FontFamily="Consolas" FontSize="12"
+                   AcceptsReturn="True" AcceptsTab="True"
+                   IsReadOnly="True"
+                   TextWrapping="NoWrap"
+                   HorizontalScrollBarVisibility="Auto"
+                   VerticalScrollBarVisibility="Auto"
+                   Background="{DynamicResource {x:Static SystemColors.ControlLightLightBrushKey}}"
+                   TextChanged="txtPrompt_TextChanged"/>
+        </DockPanel>
       </TabItem>
 
       <TabItem Header="Callstack">

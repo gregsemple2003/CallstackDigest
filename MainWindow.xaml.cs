@@ -21,9 +21,9 @@ namespace CallstackDigest
         {
             WinStateStoreWpf.Load(this);
 
-            // Populate mode list
+            // Populate mode list & load persisted choice (NEW)
             cboMode.ItemsSource = Enum.GetValues(typeof(PromptBuilder.Mode)).Cast<PromptBuilder.Mode>();
-            cboMode.SelectedItem = PromptBuilder.Mode.Explain;
+            cboMode.SelectedItem = AppSettings.ModeChoice;
 
             // Load persisted numbers
             txtFramesTop.Text = AppSettings.FramesToAnnotateFromTop.ToString();
@@ -43,6 +43,8 @@ namespace CallstackDigest
                 }
             }
             catch { /* clipboard can fail in some contexts */ }
+
+            UpdatePromptSizeIndicator(); // ensure initial indicator (NEW)
         }
 
         private void Window_Closing(object? sender, System.ComponentModel.CancelEventArgs e)
@@ -82,6 +84,9 @@ namespace CallstackDigest
 
         private void cboMode_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
+            // Persist mode choice (NEW)
+            AppSettings.ModeChoice = CurrentMode;
+
             txtTemplate.Text = PromptTemplates.Get(CurrentMode);
             _ = RebuildAsync();
         }
@@ -134,6 +139,39 @@ namespace CallstackDigest
             e.Handled = !e.Text.All(char.IsDigit);
         }
 
+        private void NumericPaste(object sender, DataObjectPastingEventArgs e)
+        {
+            if (e.DataObject.GetDataPresent(typeof(string)))
+            {
+                var text = (string)e.DataObject.GetData(typeof(string))!;
+                if (!text.All(char.IsDigit)) e.CancelCommand();
+            }
+            else e.CancelCommand();
+        }
+
+        // NEW: live updates while typing/pasting
+        private void NumericBox_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            if (sender == txtFramesTop && int.TryParse(txtFramesTop.Text, out int top))
+            {
+                top = Math.Max(0, top);
+                if (top != AppSettings.FramesToAnnotateFromTop)
+                {
+                    AppSettings.FramesToAnnotateFromTop = top;
+                    _ = RebuildAsync(); // triggers prompt + size refresh
+                }
+            }
+            else if (sender == txtMaxLines && int.TryParse(txtMaxLines.Text, out int max))
+            {
+                max = Math.Max(1, max);
+                if (max != AppSettings.MaxSourceLinesPerFunction)
+                {
+                    AppSettings.MaxSourceLinesPerFunction = max;
+                    _ = RebuildAsync(); // triggers prompt + size refresh
+                }
+            }
+        }
+
         // ---- Prompt building ----
 
         private async Task RebuildAsync()
@@ -143,6 +181,7 @@ namespace CallstackDigest
             {
                 txtPrompt.Clear();
                 txtSources.Clear();
+                lblPromptSize.Text = ""; // NEW: clear indicator when empty
                 return;
             }
 
@@ -186,6 +225,37 @@ namespace CallstackDigest
             }
 
             txtSources.Text = sb.ToString();
+
+            // NEW: update the KB indicator
+            UpdatePromptSizeIndicator();
+        }
+
+        // ---- NEW: Prompt size indicator ----
+
+        private void txtPrompt_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            UpdatePromptSizeIndicator();
+        }
+
+        private void UpdatePromptSizeIndicator()
+        {
+            if (lblPromptSize == null) return;
+
+            string text = txtPrompt.Text ?? string.Empty;
+
+            // Normalize newlines to CRLF to approximate CF_UNICODETEXT size on Windows clipboard
+            string normalized = text.Replace("\r\n", "\n").Replace("\n", "\r\n");
+
+            // Clipboard (UTF-16 LE) includes a trailing null terminator
+            int bytesUtf16 = Encoding.Unicode.GetByteCount(normalized + "\0");
+            double kbUtf16 = bytesUtf16 / 1024.0;
+
+            // Also compute UTF-8 for awareness (used by many web apps)
+            int bytesUtf8 = Encoding.UTF8.GetByteCount(normalized);
+            double kbUtf8 = bytesUtf8 / 1024.0;
+
+            lblPromptSize.Text = $"Size if copied ≈ {kbUtf16:F1} KB";
+            lblPromptSize.ToolTip = $"{bytesUtf16:N0} bytes (UTF‑16 / clipboard).  UTF‑8 ≈ {kbUtf8:F1} KB ({bytesUtf8:N0} bytes).";
         }
     }
 }
