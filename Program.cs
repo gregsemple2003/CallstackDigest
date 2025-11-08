@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.IO;
 using System.Linq;
 using System.Windows.Forms;
 
@@ -31,6 +32,14 @@ namespace CallstackAnnotator
 
             Controls.Add(_host);
 
+            // Use the embedded application icon (set via ApplicationIcon in .csproj)
+            // This also makes the icon appear in Explorer, Alt+Tab, etc.
+            try
+            {
+                this.Icon = Icon.ExtractAssociatedIcon(Application.ExecutablePath);
+            }
+            catch { /* swallow: icon is optional */ }
+
             // Always launch directly into the "results" screen (formerly shown after Paste)
 
             var results = new ResultsControl(
@@ -56,6 +65,7 @@ namespace CallstackAnnotator
             this.FormClosing += (_, __) => WinStateStore.Save(this);
 
         }
+
 
     }
 
@@ -83,6 +93,11 @@ namespace CallstackAnnotator
 
         private readonly Button _btnCopyPrompt = new() { Text = "Copy Prompt" };
 
+        // Global settings (under Mode)
+        private readonly NumericUpDown _numFrames = new() { Minimum = 0, Maximum = 10000, Width = 70 };
+
+        private readonly NumericUpDown _numMaxLines = new() { Minimum = 1, Maximum = 10000, Width = 70 };
+
 
 
         private readonly RichTextBox _rtbPrompt = new() { Dock = DockStyle.Fill, Font = new Font(FontFamily.GenericMonospace, 9), WordWrap = false };
@@ -102,8 +117,6 @@ namespace CallstackAnnotator
         private readonly RichTextBox _rtbTemplate = new() { Dock = DockStyle.Fill, Font = new Font(FontFamily.GenericMonospace, 9), WordWrap = false, AcceptsTab = true };
 
         private readonly Button _btnSaveTemplate = new() { Text = "Save Template" };
-
-        private readonly Button _btnResetTemplate = new() { Text = "Reset to Default" };
 
 
 
@@ -125,7 +138,9 @@ namespace CallstackAnnotator
 
                 Dock = DockStyle.Top,
 
-                Height = 40,
+                AutoSize = true,
+
+                AutoSizeMode = AutoSizeMode.GrowAndShrink,
 
                 Padding = new Padding(8),
 
@@ -133,7 +148,7 @@ namespace CallstackAnnotator
 
             };
 
-            _cmbMode.Items.AddRange(new object[] { PromptBuilder.Mode.Explain, PromptBuilder.Mode.Optimize });
+            _cmbMode.Items.AddRange(new object[] { PromptBuilder.Mode.Empty, PromptBuilder.Mode.Explain, PromptBuilder.Mode.Optimize });
 
             _cmbMode.SelectedItem = initialMode;
 
@@ -146,6 +161,26 @@ namespace CallstackAnnotator
             top.Controls.Add(_btnPaste);       // NEW
 
             top.Controls.Add(_btnCopyPrompt);
+
+
+
+            // --- Global settings (persisted) ---
+
+            // Frames to Annotate
+
+            top.Controls.Add(new Label { Text = "Frames to Annotate:", AutoSize = true, Padding = new Padding(16, 8, 4, 0) });
+
+            _numFrames.Value = Math.Max(0, AppSettings.FramesToAnnotateFromTop);
+
+            top.Controls.Add(_numFrames);
+
+            // Max Function Lines
+
+            top.Controls.Add(new Label { Text = "Max Function Lines:", AutoSize = true, Padding = new Padding(16, 8, 4, 0) });
+
+            _numMaxLines.Value = Math.Max(1, AppSettings.MaxSourceLinesPerFunction);
+
+            top.Controls.Add(_numMaxLines);
 
 
 
@@ -167,7 +202,7 @@ namespace CallstackAnnotator
 
             templatePanel.RowStyles.Add(new RowStyle(SizeType.AutoSize));
 
-            templatePanel.RowStyles.Add(new RowStyle(SizeType.Absolute, 140f)); // fixed editor height
+            templatePanel.RowStyles.Add(new RowStyle(SizeType.Absolute, 420f)); // tripled editor height
 
 
 
@@ -187,11 +222,9 @@ namespace CallstackAnnotator
 
             templateBar.Controls.Add(_btnSaveTemplate);
 
-            templateBar.Controls.Add(_btnResetTemplate);
 
 
-
-            _rtbTemplate.Height = 140;
+            _rtbTemplate.Height = 420;
 
             _rtbTemplate.ScrollBars = RichTextBoxScrollBars.Both;
 
@@ -317,27 +350,35 @@ namespace CallstackAnnotator
 
 
 
-            _btnResetTemplate.Click += (_, __) =>
-
-            {
-
-                var mode = (PromptBuilder.Mode)_cmbMode.SelectedItem!;
-
-                PromptTemplates.ResetToDefault(mode);
-
-                UpdateTemplateEditorFromMode();
-
-                BuildPrompt();
-
-            };
-
-
-
             _btnPaste.Click += (_, __) => PasteFromClipboard();
 
 
 
             _rtbTemplate.TextChanged += (_, __) => BuildPrompt(); // live rebuild as you edit
+
+
+
+            // Persisted settings handlers
+
+            _numFrames.ValueChanged += (_, __) =>
+
+            {
+
+                AppSettings.FramesToAnnotateFromTop = (int)_numFrames.Value;
+
+                BuildPrompt();
+
+            };
+
+            _numMaxLines.ValueChanged += (_, __) =>
+
+            {
+
+                AppSettings.MaxSourceLinesPerFunction = (int)_numMaxLines.Value;
+
+                BuildPrompt();
+
+            };
 
 
 

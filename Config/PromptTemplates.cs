@@ -10,6 +10,7 @@ namespace CallstackAnnotator
     {
         private sealed class Data
         {
+            public string Empty { get; set; } = DefaultEmpty;
             public string Explain { get; set; } = DefaultExplain;
             public string Optimize { get; set; } = DefaultOptimize;
         }
@@ -22,6 +23,8 @@ namespace CallstackAnnotator
         private static Data _data = LoadInternal();
 
         // ---- Defaults (match prior hard-coded behavior) ----
+
+        public const string DefaultEmpty = @"";
 
         public const string DefaultExplain =
 @"System: You are a senior engineer expert in Unreal Engine networking (Iris, NetworkPrediction), C++, and performance.
@@ -43,7 +46,12 @@ Propose concrete improvements (quick wins and deeper changes) with trade-offs.";
         {
             lock (Gate)
             {
-                return mode == PromptBuilder.Mode.Explain ? _data.Explain : _data.Optimize;
+                return mode switch
+                {
+                    PromptBuilder.Mode.Empty => _data.Empty,
+                    PromptBuilder.Mode.Explain => _data.Explain,
+                    _ => _data.Optimize
+                };
             }
         }
 
@@ -52,17 +60,33 @@ Propose concrete improvements (quick wins and deeper changes) with trade-offs.";
             lock (Gate)
             {
                 if (string.IsNullOrWhiteSpace(template))
-                    template = mode == PromptBuilder.Mode.Explain ? DefaultExplain : DefaultOptimize;
+                {
+                    template = mode switch
+                    {
+                        PromptBuilder.Mode.Empty => DefaultEmpty,
+                        PromptBuilder.Mode.Explain => DefaultExplain,
+                        _ => DefaultOptimize
+                    };
+                }
 
-                if (mode == PromptBuilder.Mode.Explain) _data.Explain = template;
-                else _data.Optimize = template;
+                switch (mode)
+                {
+                    case PromptBuilder.Mode.Empty: _data.Empty = template; break;
+                    case PromptBuilder.Mode.Explain: _data.Explain = template; break;
+                    default: _data.Optimize = template; break;
+                }
                 SaveInternal(_data);
             }
         }
 
         public static void ResetToDefault(PromptBuilder.Mode mode)
         {
-            Set(mode, mode == PromptBuilder.Mode.Explain ? DefaultExplain : DefaultOptimize);
+            Set(mode, mode switch
+            {
+                PromptBuilder.Mode.Empty => DefaultEmpty,
+                PromptBuilder.Mode.Explain => DefaultExplain,
+                _ => DefaultOptimize
+            });
         }
 
         // ---- I/O ----
@@ -78,6 +102,7 @@ Propose concrete improvements (quick wins and deeper changes) with trade-offs.";
                     if (loaded != null)
                     {
                         // fill missing with defaults
+                        loaded.Empty ??= DefaultEmpty;
                         loaded.Explain ??= DefaultExplain;
                         loaded.Optimize ??= DefaultOptimize;
                         return loaded;

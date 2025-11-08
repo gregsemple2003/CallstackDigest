@@ -8,6 +8,10 @@
     <Platforms>AnyCPU;x64</Platforms>
     <AssemblyName>CallstackAnnotator</AssemblyName>
     <RootNamespace>CallstackAnnotator</RootNamespace>
+    <ApplicationIcon>callstack-digest-icon-512.ico</ApplicationIcon>
   </PropertyGroup>
+  <ItemGroup>
+    <None Include="callstack-digest-icon-512.ico" />
+  </ItemGroup>
 </Project>
 

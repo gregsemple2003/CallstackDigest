@@ -5,7 +5,7 @@ namespace CallstackAnnotator
 {
     public static class PromptBuilder
     {
-        public enum Mode { Explain, Optimize }
+        public enum Mode { Empty, Explain, Optimize }
 
         // NEW: primary Build uses supplied template text
         public static string Build(
