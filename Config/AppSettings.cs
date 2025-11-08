@@ -2,11 +2,11 @@ using System;
 using System.IO;
 using System.Text.Json;
 
-namespace CallstackAnnotator
+namespace CallstackDigest
 {
     public static class AppSettings
     {
-        // Persistence backing (JSON in %APPDATA%\CallstackAnnotator\settings.json)
+        // Persistence backing (JSON in %APPDATA%\CallstackDigest\settings.json)
         private sealed class Data
         {
             public int FramesToAnnotateFromTop { get; set; } = 10;
@@ -14,7 +14,7 @@ namespace CallstackAnnotator
         }
 
         private static readonly string AppDir =
-            Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "CallstackAnnotator");
+            Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "CallstackDigest");
         private static readonly string FilePath = Path.Combine(AppDir, "settings.json");
         private static readonly object Gate = new();
         private static Data _data;

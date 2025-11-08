@@ -7,6 +7,8 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <ApplicationIcon>callstack-digest-icon-512.ico</ApplicationIcon>
+    <AssemblyName>CallstackDigest</AssemblyName>
+    <RootNamespace>CallstackDigest</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>

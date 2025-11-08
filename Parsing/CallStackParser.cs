@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 
-namespace CallstackAnnotator
+namespace CallstackDigest
 {
     public static class CallStackParser
     {

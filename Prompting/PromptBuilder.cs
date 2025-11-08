@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace CallstackAnnotator
+namespace CallstackDigest
 {
     public static class PromptBuilder
     {

@@ -1,6 +1,6 @@
 using System.Windows;
 
-namespace CallstackAnnotator
+namespace CallstackDigest
 {
     public partial class App : Application { }
 }

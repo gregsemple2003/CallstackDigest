@@ -2,11 +2,11 @@ using Microsoft.Win32;
 using System;
 using System.Windows;
 
-namespace CallstackAnnotator
+namespace CallstackDigest
 {
     internal static class WinStateStoreWpf
     {
-        private const string RegPath = @"Software\CallstackAnnotator";
+        private const string RegPath = @"Software\CallstackDigest";
 
         public static void Load(Window window)
         {

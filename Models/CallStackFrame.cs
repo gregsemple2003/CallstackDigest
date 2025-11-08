@@ -1,7 +1,7 @@
 using System.IO;
 using System.Text;
 
-namespace CallstackAnnotator
+namespace CallstackDigest
 {
     public sealed class CallStackFrame
     {

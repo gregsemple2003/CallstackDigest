@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 
-namespace CallstackAnnotator
+namespace CallstackDigest
 {
     /// <summary>
     /// Extracts the source text of a function that appears in a call stack frame.

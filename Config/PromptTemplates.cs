@@ -4,7 +4,7 @@ using System;
 using System.IO;
 using System.Text.Json;
 
-namespace CallstackAnnotator
+namespace CallstackDigest
 {
     public static class PromptTemplates
     {
@@ -16,7 +16,7 @@ namespace CallstackAnnotator
         }
 
         private static readonly string AppDir =
-            Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "CallstackAnnotator");
+            Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "CallstackDigest");
         private static readonly string FilePath = Path.Combine(AppDir, "templates.json");
         private static readonly object Gate = new();
 
