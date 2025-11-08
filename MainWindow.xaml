@@ -1,0 +1,86 @@
+<Window x:Class="CallstackAnnotator.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Callstack Digest"
+        MinHeight="480" MinWidth="760"
+        WindowStartupLocation="Manual"
+        Closing="Window_Closing">
+  <Grid Margin="12">
+    <Grid.RowDefinitions>
+      <RowDefinition Height="Auto"/>  <!-- toolbar -->
+      <RowDefinition Height="2*"/>    <!-- template editor (~2x) -->
+      <RowDefinition Height="3*"/>    <!-- tabs -->
+    </Grid.RowDefinitions>
+
+    <!-- Row 0: toolbar -->
+    <StackPanel Grid.Row="0" Orientation="Horizontal" VerticalAlignment="Center">
+      <TextBlock Text="Mode:" VerticalAlignment="Center"/>
+      <ComboBox x:Name="cboMode" Width="140" Margin="8,0,0,0"
+                SelectionChanged="cboMode_SelectionChanged"/>
+
+      <Button x:Name="btnPaste" Content="Paste" Padding="14,6" Margin="8,0,0,0" Click="btnPaste_Click"/>
+      <Button x:Name="btnCopy"  Content="Copy"  Padding="14,6" Margin="8,0,0,0" Click="btnCopy_Click"/>
+
+      <TextBlock Text="Frames to Annotate:" VerticalAlignment="Center" Margin="16,0,0,0"/>
+      <TextBox x:Name="txtFramesTop" Width="60" Height="28" Margin="6,0,0,0"
+               VerticalContentAlignment="Center" LostFocus="NumericBox_LostFocus" PreviewTextInput="DigitsOnly"/>
+
+      <TextBlock Text="Max Function Lines:" VerticalAlignment="Center" Margin="16,0,0,0"/>
+      <TextBox x:Name="txtMaxLines" Width="60" Height="28" Margin="6,0,0,0"
+               VerticalContentAlignment="Center" LostFocus="NumericBox_LostFocus" PreviewTextInput="DigitsOnly"/>
+    </StackPanel>
+
+    <!-- Row 1: Prompt template -->
+    <GroupBox Grid.Row="1" Header="Prompt template (persists per Mode):" Margin="0,8,0,8">
+      <DockPanel LastChildFill="True">
+        <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="0,8,0,8">
+          <Button x:Name="btnSaveTemplate"  Content="Save"  Padding="14,6" Click="btnSaveTemplate_Click"/>
+          <Button x:Name="btnResetTemplate" Content="Reset" Padding="14,6" Margin="8,0,0,0" Click="btnResetTemplate_Click"/>
+          <TextBlock x:Name="lblSaveStatus" Margin="12,0,0,0" VerticalAlignment="Center" Foreground="Gray"/>
+        </StackPanel>
+
+        <TextBox x:Name="txtTemplate"
+                 FontFamily="Consolas" FontSize="12"
+                 AcceptsReturn="True" AcceptsTab="True"
+                 TextWrapping="NoWrap"
+                 HorizontalScrollBarVisibility="Auto"
+                 VerticalScrollBarVisibility="Auto"
+                 TextChanged="txtTemplate_TextChanged"/>
+      </DockPanel>
+    </GroupBox>
+
+    <!-- Row 2: Tabs -->
+    <TabControl x:Name="tabs" Grid.Row="2">
+      <TabItem Header="Prompt">
+        <TextBox x:Name="txtPrompt"
+                 FontFamily="Consolas" FontSize="12"
+                 AcceptsReturn="True" AcceptsTab="True"
+                 IsReadOnly="True"
+                 TextWrapping="NoWrap"
+                 HorizontalScrollBarVisibility="Auto"
+                 VerticalScrollBarVisibility="Auto"
+                 Background="{DynamicResource {x:Static SystemColors.ControlLightLightBrushKey}}"/>
+      </TabItem>
+
+      <TabItem Header="Callstack">
+        <TextBox x:Name="txtCallstack"
+                 FontFamily="Consolas" FontSize="12"
+                 AcceptsReturn="True" AcceptsTab="True"
+                 TextWrapping="NoWrap"
+                 HorizontalScrollBarVisibility="Auto"
+                 VerticalScrollBarVisibility="Auto"/>
+      </TabItem>
+
+      <TabItem Header="Sources">
+        <TextBox x:Name="txtSources"
+                 FontFamily="Consolas" FontSize="12"
+                 AcceptsReturn="True" AcceptsTab="True"
+                 IsReadOnly="True"
+                 TextWrapping="NoWrap"
+                 HorizontalScrollBarVisibility="Auto"
+                 VerticalScrollBarVisibility="Auto"/>
+      </TabItem>
+    </TabControl>
+  </Grid>
+</Window>
+
