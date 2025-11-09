@@ -3,7 +3,7 @@
 **Turn raw Windows call stacks into clean, LLM‑ready prompts—automatically annotated with the most relevant source snippets.**
 Built with .NET 8 (WPF) for Windows.
 
-<img width="848" height="838" alt="image" src="https://github.com/user-attachments/assets/7b0593db-fea1-4969-82a4-b0d1ad93fd79" />
+<img width="851" height="845" alt="image" src="https://github.com/user-attachments/assets/97902512-b766-4ce8-8aff-95063536cd9d" />
 
 ---
 
